@@ -8,13 +8,13 @@ class ReaderManagementModel: public QSqlTableModel
 {
     Q_OBJECT
 public:
-    enum ReaderManagementType
-    {
-        reader,newReader
-    };
     ReaderManagementModel(const QString &type,QObject *parent=0);
     void searchID(const int);
     void searchName(const QString &);
+    void fulltable();
+
+private:
+    QString type;
 
 };
 

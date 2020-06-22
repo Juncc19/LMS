@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/adminIcon.png</file>
+        <file>image/readerIcon.png</file>
+        <file>image/bookIcon.png</file>
+        <file>image/newBookIcon.png</file>
+        <file>image/deleteIcon.png</file>
+        <file>image/homeIcon.png</file>
+        <file>image/password.png</file>
+        <file>image/searchIcon.png</file>
+        <file>image/recordIcon.png</file>
+    </qresource>
+</RCC>

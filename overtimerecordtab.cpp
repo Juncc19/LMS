@@ -4,17 +4,26 @@ overtimeRecordTab::overtimeRecordTab(QWidget *parent) : QWidget(parent)
 {
     model= new QSqlTableModel(this);
     model->setTable("overtimeRecord");
+    model->setHeaderData(0,Qt::Horizontal,tr("图书ID"));
+    model->setHeaderData(1,Qt::Horizontal,tr("书名"));
+    model->setHeaderData(2,Qt::Horizontal,tr("作者"));
+    model->setHeaderData(3,Qt::Horizontal,tr("图书分类"));
+    model->setHeaderData(4,Qt::Horizontal,tr("用户ID"));
+    model->setHeaderData(5,Qt::Horizontal,tr("用户名"));
+    model->setHeaderData(6,Qt::Horizontal,tr("借书日期"));
+    model->setHeaderData(7,Qt::Horizontal,tr("归还限期"));
+    model->select();
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
 
     view=new QTableView(this);
     view->setModel(model);
-    //view->setColumnHidden(1,true);
-    view->resizeColumnsToContents();
+    //view->resizeColumnsToContents();
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
 
     idSearch=new QLineEdit(this);
-    idSearch->setPlaceholderText("请输入bookId");
+    idSearch->setPlaceholderText("请输入图书ID");
     idSearch->setValidator(new QIntValidator(idSearch));
     idSearch->setAttribute(Qt::WA_InputMethodEnabled,false);
 
@@ -26,9 +35,11 @@ overtimeRecordTab::overtimeRecordTab(QWidget *parent) : QWidget(parent)
 
     idSearchButton=new QPushButton(tr("ID查询"),this);
     nameSearchButton=new QPushButton(tr("书名查询"),this);
+    removeRowButton=new QPushButton(tr("删除选中行"),this);
     fulltableButton=new QPushButton(tr("显示全部"),this);
     connect(idSearchButton,&QPushButton::clicked,this,&overtimeRecordTab::searchID);
     connect(nameSearchButton,&QPushButton::clicked,this,&overtimeRecordTab::searchName);
+    connect(removeRowButton,&QPushButton::clicked,this,&overtimeRecordTab::removeRow);
     connect(fulltableButton,&QPushButton::clicked,this,&overtimeRecordTab::fulltable);
 
     QGridLayout *searchLayout=new QGridLayout;
@@ -36,6 +47,7 @@ overtimeRecordTab::overtimeRecordTab(QWidget *parent) : QWidget(parent)
     searchLayout->addWidget(idSearchButton,0,1);
     searchLayout->addWidget(nameSearch,1,0);
     searchLayout->addWidget(nameSearchButton,1,1);
+    searchLayout->addWidget(removeRowButton,0,3);
     searchLayout->addWidget(fulltableButton,1,3);
     searchLayout->setColumnStretch(0,3);
     searchLayout->setColumnStretch(1,1);
@@ -64,6 +76,7 @@ void overtimeRecordTab::searchID()
         qCritical().noquote()<<QString("Fail to find : ID '%1'").arg(id);
     }
 
+    idSearch->clear();
     return;
 }
 
@@ -78,11 +91,29 @@ void overtimeRecordTab::searchName()
         qCritical().noquote()<<QString("Fail to find : Name '%1'").arg(name);
     }
 
+    nameSearch->clear();
     return;
 }
 
 void overtimeRecordTab::fulltable()
 {
-    model->setTable("overtimeRecord");
+    model->setFilter("");
     model->select();
+}
+
+void overtimeRecordTab::removeRow()
+{
+    int row=view->currentIndex().row();
+    if(row==-1)
+    {
+        QMessageBox::warning(this,tr("没有选中的行!"),tr("请重新选择要删除的行!"));
+        return;
+    }
+    model->removeRow(row);
+    int choice=QMessageBox::warning(this,tr("删除当前行!"),tr("确定删除当前行吗？"),QMessageBox::Yes,QMessageBox::No);
+    if(choice==QMessageBox::Yes)
+    {
+        model->submitAll();
+    }
+    else model->revertAll();
 }

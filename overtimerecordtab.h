@@ -19,6 +19,7 @@ private slots:
     void searchID();
     void searchName();
     void fulltable();
+    void removeRow();
 
 private:
     QSqlTableModel *model;
@@ -28,6 +29,7 @@ private:
     QPushButton *idSearchButton;
     QPushButton *nameSearchButton;
     QPushButton *fulltableButton;
+    QPushButton *removeRowButton;
 };
 
 #endif // OVERTIMERECORDTAB_H

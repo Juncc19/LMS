@@ -12,8 +12,6 @@ AccountTableModel::AccountTableModel(const QString &type, QObject *parent)
 
 void AccountTableModel::changeName(int id, const QString &name)
 {
-    const QString oldFilter = this->filter();
-
     setFilter(QString("id = %1").arg(id));
     select();
 
@@ -25,20 +23,18 @@ void AccountTableModel::changeName(int id, const QString &name)
         return;
     }
 
-    if (!setData(index(0, 1), name) && !submitAll()) {
+    if (!setData(index(0, 2), name)||!submitAll()) {
         qWarning() << "Fail to change name in" << tableName() + ":" << lastError();
     } else {
         qInfo() << "Account id" << id << "in" << tableName() + ": name changed to " << name;
     }
 
-    setFilter(oldFilter);
+    setFilter("");
     select(); //还原
 }
 
 void AccountTableModel::changePassword(int id, const QString &password)
 {
-    const QString oldFilter = this->filter();
-
     setFilter(QString("id = %1").arg(id));
     select();
 
@@ -50,13 +46,13 @@ void AccountTableModel::changePassword(int id, const QString &password)
         return;
     }
 
-    if (!setData(index(0, 2), password) && !submitAll()) {
+    if (!setData(index(0, 1), password)||!submitAll()) {
         qWarning() << "Fail to change password" << tableName() + ":" << lastError();
     } else {
         qInfo() << "Account id" << id << "in" << tableName() + ": password changed";
     }
 
-    setFilter(oldFilter);
+    setFilter("");
     select();
 }
 
@@ -71,8 +67,6 @@ int AccountTableModel::addEntry(const QString &name, const QString &password)
         qCritical()  << "Fail to insert record to AccountTableModel:" << lastError();
         return -1; // represent failing to create account
     } else  {
-        // submitAll(); 
-        // If insertion strategy set to onManualSubmit, cancel the comment.
         qInfo().noquote() <<  "Add account to" << tableName() + ":"
                  << QString("(%1, %2)").arg(newId).arg(name);
         // password is hidden for security
@@ -80,4 +74,55 @@ int AccountTableModel::addEntry(const QString &name, const QString &password)
 
     //submitAll();
     return newId;
+}
+
+int AccountTableModel::deleteEntry(int id)
+{
+    const QString& oldFilter = this->filter();
+    setFilter("");
+    select();
+    if(!deleteRowFromTable(id)||!submitAll()){
+        qCritical() << "error!";
+        return false;
+    }
+    setFilter(oldFilter);
+    select();
+    return true;
+}
+
+QString AccountTableModel::getName(int id)
+{
+    const QString oldFilter = this->filter();
+    setFilter(QString("id = '%1'").arg(id));
+    select();
+    QString name;
+    if(rowCount() == 1) {
+        name = data(index(0, fieldName::name)).toString();
+        setFilter(oldFilter);
+        select();
+        return name;
+    }
+    else {
+        name = "";
+        setFilter(oldFilter);
+        select();
+        return name;
+    }
+}
+
+bool AccountTableModel::isExist(int userId)
+{
+    const QString oldFilter = this->filter();
+    setFilter(QString("id = '%1'").arg(userId));
+    select();
+    if(rowCount() != 1) {
+        setFilter(oldFilter);
+        select();
+        return false;
+    }
+    else {
+        setFilter(oldFilter);
+        select();
+        return true;
+    }
 }
