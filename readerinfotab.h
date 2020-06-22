@@ -22,8 +22,6 @@ private slots:
     void searchID();
     void searchName();
     void fulltable();
-    //void borrowBook();
-    //void returnBook();
 
 private:
     ReaderManagementModel *model;
@@ -32,8 +30,6 @@ private:
     QLineEdit *nameSearch;
     QPushButton *idSearchButton;
     QPushButton *nameSearchButton;
-    //QPushButton *borrowButton=new QPushButton;
-    //QPushButton *returnButton=new QPushButton;
     QPushButton *fulltableButton;
 
 };

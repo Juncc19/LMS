@@ -3,6 +3,7 @@
 ReaderManagementModel::ReaderManagementModel(const QString &type, QObject *parent)
     :QSqlTableModel(parent)
 {
+    this->type = type;
     setTable(type);
     setHeaderData(0, Qt::Horizontal, tr("ID"));
     setHeaderData(1, Qt::Horizontal, tr("密码"));
@@ -37,3 +38,8 @@ void ReaderManagementModel::searchName(const QString &name)
     return;
 }
 
+void ReaderManagementModel::fulltable()
+{
+    setFilter("");
+    select();
+}

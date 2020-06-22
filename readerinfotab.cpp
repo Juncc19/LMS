@@ -2,18 +2,18 @@
 
 readerInfoTab::readerInfoTab(QWidget *parent) : QWidget(parent)
 {
-    model= new ReaderManagementModel("reader");
+    model= new ReaderManagementModel("reader",this);
 
     view=new QTableView(this);
     view->setModel(model);
     view->setColumnHidden(1,true);
-    view->resizeColumnsToContents();
+    //view->resizeColumnsToContents();
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
 
     idSearch=new QLineEdit(this);
-    idSearch->setPlaceholderText("请输入您的id");
+    idSearch->setPlaceholderText("请输入您的ID");
     idSearch->setValidator(new QIntValidator(idSearch));
     idSearch->setAttribute(Qt::WA_InputMethodEnabled,false);
 
@@ -29,8 +29,6 @@ readerInfoTab::readerInfoTab(QWidget *parent) : QWidget(parent)
     connect(idSearchButton,&QPushButton::clicked,this,&readerInfoTab::searchID);
     connect(nameSearchButton,&QPushButton::clicked,this,&readerInfoTab::searchName);
     connect(fulltableButton,&QPushButton::clicked,this,&readerInfoTab::fulltable);
-    //connect(borrowButton,&QPushButton::clicked,this,&readerInfoTab::borrowBook);
-    //connect(returnButton,&QPushButton::clicked,this,&readerInfoTab::returnBook);
 
     QGridLayout *searchLayout=new QGridLayout;
     searchLayout->addWidget(idSearch,0,0);
@@ -58,15 +56,18 @@ readerInfoTab::readerInfoTab(QWidget *parent) : QWidget(parent)
 void readerInfoTab::searchID()
 {
     model->searchID(idSearch->text().toInt());
+    idSearch->clear();
 }
 
 void readerInfoTab::searchName()
 {
     model->searchName(nameSearch->text());
+    nameSearch->clear();
 }
 
 void readerInfoTab::fulltable()
 {
-    model->setTable("reader");
-    model->select();
+    model->fulltable();
+    view->setModel(model);
+    view->setColumnHidden(1,true);
 }

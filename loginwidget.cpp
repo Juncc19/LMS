@@ -2,7 +2,8 @@
 #include "constants.h"
 
 LoginWidget::LoginWidget(QSharedPointer<AccountTableModel> readerTable,
-                         QSharedPointer<AccountTableModel> adminTable, QWidget *parent)
+                         QSharedPointer<AccountTableModel> adminTable,
+                         QWidget *parent)
     : QDialog(parent), readerTable(readerTable), adminTable(adminTable)
 {
     QLabel *welcomeLabel = new QLabel(tr("欢迎"), this);
@@ -92,11 +93,8 @@ void LoginWidget::judgeLogin()
     int id = QVariant(idEdit->text()).toInt();
 
     const QString password = passwordEdit->text();
-
-    const QString oldFilter = tablePointer->filter();
     tablePointer->setFilter(QString("id = %1").arg(id));
     tablePointer->select();
-
     if  (tablePointer->rowCount() == 0) {
         QMessageBox::warning(this, tr("ID不存在"), tr("请重新输入ID"));
         return;
@@ -109,7 +107,7 @@ void LoginWidget::judgeLogin()
     }
     const QString correctPassword = tablePointer->data(tablePointer->index(0, 1)).toString();
 
-    tablePointer->setFilter(oldFilter);
+    tablePointer->setFilter("");
     tablePointer->select();
     // restore
 
@@ -130,3 +128,16 @@ void LoginWidget::autoFill(int id, const QString &password)
     idEdit->setText(QVariant(id).toString());
     passwordEdit->setText(password);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
