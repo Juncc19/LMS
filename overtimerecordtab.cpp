@@ -2,8 +2,9 @@
 
 overtimeRecordTab::overtimeRecordTab(QWidget *parent) : QWidget(parent)
 {
-    model= new QSqlTableModel(this);
+    model= new QSqlRelationalTableModel(this);
     model->setTable("overtimeRecord");
+    model->setRelation(3,QSqlRelation("genres","id","genre"));  //set the relation between the tables
     model->setHeaderData(0,Qt::Horizontal,tr("图书ID"));
     model->setHeaderData(1,Qt::Horizontal,tr("书名"));
     model->setHeaderData(2,Qt::Horizontal,tr("作者"));
@@ -17,7 +18,6 @@ overtimeRecordTab::overtimeRecordTab(QWidget *parent) : QWidget(parent)
 
     view=new QTableView(this);
     view->setModel(model);
-    //view->resizeColumnsToContents();
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -33,7 +33,7 @@ overtimeRecordTab::overtimeRecordTab(QWidget *parent) : QWidget(parent)
     nameSearch->setAttribute(Qt::WA_InputMethodEnabled,false);
     nameSearch->setValidator(new QRegExpValidator(QRegExp("[\\S]*"), nameSearch));
 
-    idSearchButton=new QPushButton(tr("ID查询"),this);
+    idSearchButton=new QPushButton(tr("图书ID查询"),this);
     nameSearchButton=new QPushButton(tr("书名查询"),this);
     removeRowButton=new QPushButton(tr("删除选中行"),this);
     fulltableButton=new QPushButton(tr("显示全部"),this);
@@ -73,7 +73,8 @@ void overtimeRecordTab::searchID()
 
     if(model->rowCount()==0)
     {
-        qCritical().noquote()<<QString("Fail to find : ID '%1'").arg(id);
+        qCritical().noquote()<<QString("Fail to find ID: '%1'").arg(id);
+        QMessageBox::warning(this,QString("找不到图书ID: '%1'").arg(id),tr("请重新输入图书ID!"));
     }
 
     idSearch->clear();
@@ -88,7 +89,8 @@ void overtimeRecordTab::searchName()
 
     if(model->rowCount()==0)
     {
-        qCritical().noquote()<<QString("Fail to find : Name '%1'").arg(name);
+        qCritical().noquote()<<QString("Fail to find name: '%1'").arg(name);
+        QMessageBox::warning(this,QString("找不到书名: '%1'").arg(name),tr("请重新输入书名!"));
     }
 
     nameSearch->clear();

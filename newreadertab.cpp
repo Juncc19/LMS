@@ -6,8 +6,7 @@ newReaderTab::newReaderTab(QWidget *parent) : QWidget(parent)
 
     view=new QTableView(this);
     view->setModel(model);
-    view->setColumnHidden(1,true);
-    //view->resizeColumnsToContents();
+    view->setColumnHidden(1,true);  //hide the password
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -18,13 +17,13 @@ newReaderTab::newReaderTab(QWidget *parent) : QWidget(parent)
     idSearch->setAttribute(Qt::WA_InputMethodEnabled,false);
 
     nameSearch=new QLineEdit(this);
-    nameSearch->setPlaceholderText("请输入您的姓名");
+    nameSearch->setPlaceholderText("请输入您的用户名");
     nameSearch->setMaxLength(MAX_NAME_LENGTH);
     nameSearch->setAttribute(Qt::WA_InputMethodEnabled,false);
     nameSearch->setValidator(new QRegExpValidator(QRegExp("[\\S]*"), nameSearch));
 
     idSearchButton=new QPushButton(tr("ID查询"),this);
-    nameSearchButton=new QPushButton(tr("姓名查询"),this);
+    nameSearchButton=new QPushButton(tr("用户名查询"),this);
     fulltableButton=new QPushButton(tr("显示全部"),this);
     emptyButton=new QPushButton(tr("清除记录"),this);
     connect(idSearchButton,&QPushButton::clicked,this,&newReaderTab::searchID);
@@ -58,13 +57,15 @@ newReaderTab::newReaderTab(QWidget *parent) : QWidget(parent)
 
 void newReaderTab::searchID()
 {
-    model->searchID(idSearch->text().toInt());
+    if(!model->searchID(idSearch->text().toInt()))
+        QMessageBox::warning(this,QString("找不到ID: '%1'").arg(idSearch->text().toInt()),tr("请重新输入ID!"));
     idSearch->clear();
 }
 
 void newReaderTab::searchName()
 {
-    model->searchName(nameSearch->text());
+    if(!model->searchName(nameSearch->text()))
+        QMessageBox::warning(this,QString("找不到用户名: '%1'").arg(nameSearch->text()),tr("请重新输入用户名!"));
     nameSearch->clear();
 }
 
@@ -78,5 +79,9 @@ void newReaderTab::fulltable()
 void newReaderTab::emptytable()
 {
     model->removeRows(0,model->rowCount());
-    model->submitAll();
+    if(model->submitAll())
+    {
+        QMessageBox::information(this,tr("提示"),tr("清除成功!"));
+    }
+    else QMessageBox::warning(this,tr("提示"),tr("清除失败!"));
 }

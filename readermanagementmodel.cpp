@@ -12,30 +12,32 @@ ReaderManagementModel::ReaderManagementModel(const QString &type, QObject *paren
     setEditStrategy(QSqlTableModel::OnManualSubmit);
 }
 
-void ReaderManagementModel::searchID(const int id)
+bool ReaderManagementModel::searchID(const int id)
 {
     setFilter(QString("id='%1'").arg(id));
     select();
 
     if(rowCount()==0)
     {
-        qCritical().noquote()<<QString("Fail to find : ID '%1'").arg(id);
+        qCritical().noquote()<<QString("Fail to find ID: '%1'").arg(id);
+        return 0;
     }
 
-    return;
+    return 1;
 }
 
-void ReaderManagementModel::searchName(const QString &name)
+bool ReaderManagementModel::searchName(const QString &name)
 {
     setFilter(QString("name='%1'").arg(name));
     select();
 
     if(rowCount()==0)
     {
-        qCritical().noquote()<<QString("Fail to find : Name '%1'").arg(name);
+        qCritical().noquote()<<QString("Fail to find name: '%1'").arg(name);
+        return 0;
     }
 
-    return;
+    return 1;
 }
 
 void ReaderManagementModel::fulltable()

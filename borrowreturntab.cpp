@@ -64,8 +64,10 @@ void borrowReturnTab::borrowBook()
     usermodel->setFilter(QString("id = %1").arg(userid));
     usermodel->select();
 
+    //check if this user exists
     if (usermodel->rowCount() == 0) {
-        qCritical().noquote() << QString("Fail to find : userID '%1'").arg(userid);
+        qCritical().noquote() << QString("Fail to find userID: '%1'").arg(userid);
+        QMessageBox::warning(this,QString("找不到用户ID: '%1'").arg(userid),tr("请重新输入用户ID!"));
         return;
     }
     QSqlRecord userRecord= usermodel->record(0);
@@ -74,19 +76,26 @@ void borrowReturnTab::borrowBook()
     bookmodel->setFilter(QString("bookId = %1").arg(bookid));
     bookmodel->select();
 
+    //check if this book exists
     if (bookmodel->rowCount() == 0) {
-        qCritical().noquote() << QString("Fail to find : bookID '%1'").arg(bookid);
+        qCritical().noquote() << QString("Fail to find bookID: '%1'").arg(bookid);
+        QMessageBox::warning(this,QString("找不到图书ID: '%1'").arg(bookid),tr("请重新输入图书ID!"));
         return;
     }
 
+    //check if this book is in stock
     QSqlRecord bookRecord = bookmodel->record(0);
     if(bookRecord.value("state")!=0)
     {
         qCritical().noquote() << QString("This book is not in stock");
+        QMessageBox::warning(this,tr("此书不在库中!"),tr("请输入其他书籍!"));
         return;
     }
+
+    //change the bookState
     bookmodel->setData(bookmodel->index(0,4),1);    // 1 means being lent out
 
+    //write a new record for this transaction
     int row=recordmodel->rowCount();
     QSqlRecord recordRecord = recordmodel->record();
     QDate currentTime=QDateTime::currentDateTime().date();
@@ -98,8 +107,8 @@ void borrowReturnTab::borrowBook()
     recordRecord.setValue("userId",userRecord.value("id"));
     recordRecord.setValue("userName",userRecord.value("name"));
     recordRecord.setValue("borrowDate",currentTime.toString());
-    //recordRecord.setValue("returnDate",currentTime.toString());
-    recordRecord.setValue("returnDate",currentTime.addMonths(LOAN_PERIOD).toString());    //test
+    //recordRecord.setValue("returnDate",currentTime.toString());   //test
+    recordRecord.setValue("returnDate",currentTime.addMonths(LOAN_PERIOD).toString());
     recordRecord.setValue("recordState",0);
     recordmodel->insertRecord(row,recordRecord);
 
@@ -107,7 +116,9 @@ void borrowReturnTab::borrowBook()
     {
         QMessageBox::information(this,tr("提示"),tr("借书成功!"));
     }
+    else QMessageBox::warning(this,tr("提示"),tr("借书失败!"));
 
+    //restore the filter
     bookmodel->setFilter(oldBookFilter);
     bookmodel->select();
     usermodel->setFilter(oldUserFilter);
@@ -127,8 +138,10 @@ void borrowReturnTab::returnBook()
     usermodel->setFilter(QString("id = '%1'").arg(userid));
     usermodel->select();
 
+    //check if this user exists
     if (usermodel->rowCount() == 0) {
-        qCritical().noquote() << QString("Fail to find : userID '%1'").arg(userid);
+        qCritical().noquote() << QString("Fail to find userID: '%1'").arg(userid);
+        QMessageBox::warning(this,QString("找不到用户ID: '%1'").arg(userid),tr("请重新输入用户ID!"));
         return;
     }
     QSqlRecord userRecord= usermodel->record(0);
@@ -137,26 +150,33 @@ void borrowReturnTab::returnBook()
     bookmodel->setFilter(QString("bookId = '%1'").arg(bookid));
     bookmodel->select();
 
+    //check if this book exists
     if (bookmodel->rowCount() == 0) {
-        qCritical().noquote() << QString("Fail to find : bookID '%1'").arg(bookid);
+        qCritical().noquote() << QString("Fail to find bookID: '%1'").arg(bookid);
+        QMessageBox::warning(this,QString("找不到图书ID: '%1'").arg(bookid),tr("请重新输入图书ID!"));
         return;
     }
 
+    //check if this book is lent out normally
     QSqlRecord bookRecord = bookmodel->record(0);
     if(bookRecord.value("state")!=1)
     {
-        qCritical().noquote() << QString("This book is not lent out");
+        qCritical().noquote() << QString("This book is not lent out or is lost");
+        QMessageBox::warning(this,tr("此书在库中或以丢失!"),tr("请输入其他书籍!"));
         return;
     }
 
+    //search the record and check if it exists
     const QString oldRecordFilter = recordmodel->filter();
     recordmodel->setFilter(QString("bookId = '%1' and userId = '%2' and (recordState = 0 or recordState = 1)").arg(bookid).arg(userid));
     recordmodel->select();
     if (recordmodel->rowCount() == 0) {
         qCritical().noquote() << QString("Fail to find such borrowing record");
+        QMessageBox::warning(this,tr("记录查询失败"),tr("没有找到此条记录!"));
         return;
     }
 
+    //remove the overtime-record
     if(recordmodel->record(0).value(9)==1)
     {
         const QString oldovertimeRecordFilter = overtimerecordmodel->filter();
@@ -166,11 +186,14 @@ void borrowReturnTab::returnBook()
         if(!overtimerecordmodel->submitAll())
         {
             qCritical().noquote() << QString("Failed to remove such overtimeRecord");
+            QMessageBox::warning(this,tr("移除失败"),tr("未能移除超时记录!"));
             return;
         }
         overtimerecordmodel->setFilter(oldovertimeRecordFilter);
         overtimerecordmodel->select();
     }
+
+    //change the bookState and the record's returnDate
     bookmodel->setData(bookmodel->index(0,4),0);
     recordmodel->setData(recordmodel->index(0,9),2);
     QDate currentDate=QDate::currentDate();
@@ -180,7 +203,9 @@ void borrowReturnTab::returnBook()
     {
         QMessageBox::information(this,tr("提示"),tr("还书成功!"));
     }
+    else QMessageBox::warning(this,tr("提示"),tr("还书失败!"));
 
+    //restore the filter
     bookmodel->setFilter(oldBookFilter);
     bookmodel->select();
     usermodel->setFilter(oldUserFilter);

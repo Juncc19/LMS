@@ -5,6 +5,7 @@
 #include <QWidget>
 #include<QtWidgets>
 #include<QtSql>
+#include<qsqlrelationaltablemodel.h>
 #include"constants.h"
 
 class overtimeRecordTab : public QWidget
@@ -22,7 +23,7 @@ private slots:
     void removeRow();
 
 private:
-    QSqlTableModel *model;
+    QSqlRelationalTableModel *model;
     QTableView *view;
     QLineEdit *idSearch;
     QLineEdit *nameSearch;

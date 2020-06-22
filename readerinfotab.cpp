@@ -6,8 +6,7 @@ readerInfoTab::readerInfoTab(QWidget *parent) : QWidget(parent)
 
     view=new QTableView(this);
     view->setModel(model);
-    view->setColumnHidden(1,true);
-    //view->resizeColumnsToContents();
+    view->setColumnHidden(1,true);  //hide the password
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -18,13 +17,13 @@ readerInfoTab::readerInfoTab(QWidget *parent) : QWidget(parent)
     idSearch->setAttribute(Qt::WA_InputMethodEnabled,false);
 
     nameSearch=new QLineEdit(this);
-    nameSearch->setPlaceholderText("请输入您的姓名");
+    nameSearch->setPlaceholderText("请输入您的用户名");
     nameSearch->setMaxLength(MAX_NAME_LENGTH);
     nameSearch->setAttribute(Qt::WA_InputMethodEnabled,false);
     nameSearch->setValidator(new QRegExpValidator(QRegExp("[\\S]*"), nameSearch));
 
     idSearchButton=new QPushButton(tr("ID查询"),this);
-    nameSearchButton=new QPushButton(tr("姓名查询"),this);
+    nameSearchButton=new QPushButton(tr("用户名查询"),this);
     fulltableButton=new QPushButton(tr("显示全部"),this);
     connect(idSearchButton,&QPushButton::clicked,this,&readerInfoTab::searchID);
     connect(nameSearchButton,&QPushButton::clicked,this,&readerInfoTab::searchName);
@@ -55,13 +54,15 @@ readerInfoTab::readerInfoTab(QWidget *parent) : QWidget(parent)
 
 void readerInfoTab::searchID()
 {
-    model->searchID(idSearch->text().toInt());
+    if(!model->searchID(idSearch->text().toInt()))
+        QMessageBox::warning(this,QString("找不到ID: '%1'").arg(idSearch->text().toInt()),tr("请重新输入ID!"));
     idSearch->clear();
 }
 
 void readerInfoTab::searchName()
 {
-    model->searchName(nameSearch->text());
+    if(!model->searchName(nameSearch->text()))
+        QMessageBox::warning(this,QString("找不到用户名: '%1'").arg(nameSearch->text()),tr("请重新输入用户名!"));
     nameSearch->clear();
 }
 

@@ -117,10 +117,6 @@ public:
                 return q.lastError();
         }
 
-        q.exec("insert into book values(0, 'bookName', 'authorName', 0, 0)");  //insert test data
-        q.exec("insert into book values(1, 'bookName', 'authorName', 0, 0)");  //insert test data
-        q.exec("insert into book values(2, 'bookName', 'authorName', 0, 0)");  //insert test data
-
         return QSqlError();
     }
 
